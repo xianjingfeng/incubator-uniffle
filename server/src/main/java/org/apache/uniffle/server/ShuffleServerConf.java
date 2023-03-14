@@ -395,6 +395,13 @@ public class ShuffleServerConf extends RssBaseConf {
       .defaultValue(true)
       .withDescription("Whether shutdown the server after server is decommissioned");
 
+  public static final ConfigOption<Integer> NETTY_SERVER_PORT = ConfigOptions
+      .key("rss.server.netty.port")
+      .intType()
+      .checkValue(ConfigUtils.POSITIVE_INTEGER_VALIDATOR_2, "netty port must be positive")
+      .defaultValue(-1)
+      .withDescription("Shuffle netty server port");
+
   public ShuffleServerConf() {
   }
 
