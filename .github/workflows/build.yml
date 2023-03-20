@@ -39,5 +39,5 @@ jobs:
       fail-fast: false
     steps:
         - uses: actions/checkout@v3
-        - run: for i in `seq 10`; do mvn test -Dtest=QuorumTest; done
+        - run: for i in `seq 10`; do mvn -T 1C test -Dtest=QuorumTest; done
           shell: bash
