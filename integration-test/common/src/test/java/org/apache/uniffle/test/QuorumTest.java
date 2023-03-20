@@ -18,8 +18,11 @@
 package org.apache.uniffle.test;
 
 import java.io.File;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -52,6 +55,7 @@ import org.apache.uniffle.server.ShuffleServer;
 import org.apache.uniffle.server.ShuffleServerConf;
 import org.apache.uniffle.storage.util.StorageType;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -132,11 +136,11 @@ public class QuorumTest extends ShuffleReadWriteBase {
     // spark.rss.data.replica.write=2
     // spark.rss.data.replica.read=2
     ((ShuffleServerGrpcClient)ShuffleServerClientFactory
-        .getInstance().getShuffleServerClient("GRPC", shuffleServerInfo0)).adjustTimeout(200);
+        .getInstance().getShuffleServerClient("GRPC", shuffleServerInfo0)).adjustTimeout(2000);
     ((ShuffleServerGrpcClient)ShuffleServerClientFactory
-        .getInstance().getShuffleServerClient("GRPC", shuffleServerInfo1)).adjustTimeout(200);
+        .getInstance().getShuffleServerClient("GRPC", shuffleServerInfo1)).adjustTimeout(2000);
     ((ShuffleServerGrpcClient)ShuffleServerClientFactory
-        .getInstance().getShuffleServerClient("GRPC", shuffleServerInfo2)).adjustTimeout(200);
+        .getInstance().getShuffleServerClient("GRPC", shuffleServerInfo2)).adjustTimeout(2000);
 
     Thread.sleep(2000);
   }
@@ -340,8 +344,8 @@ public class QuorumTest extends ShuffleReadWriteBase {
     Roaring64NavigableMap blockIdBitmap = Roaring64NavigableMap.bitmapOf();
     Roaring64NavigableMap taskIdBitmap = Roaring64NavigableMap.bitmapOf(0);
     // When 2 servers are timeout, the block sending should fail
-    enableTimeout((MockedShuffleServer)shuffleServers.get(1), 500);
-    enableTimeout((MockedShuffleServer)shuffleServers.get(2), 500);
+    enableTimeout((MockedShuffleServer)shuffleServers.get(1), 2000);
+    enableTimeout((MockedShuffleServer)shuffleServers.get(2), 2000);
 
     List<ShuffleBlockInfo> blocks = createShuffleBlockList(
         0, 0, 0, 3, 25, blockIdBitmap,
@@ -378,7 +382,7 @@ public class QuorumTest extends ShuffleReadWriteBase {
   }
 
   @Test
-  public void case3() throws Exception {
+  public void case3(@TempDir File tmpDir) throws Exception {
     String testAppId = "case3";
     registerShuffleServer(testAppId,3, 2, 2, true);
     disableTimeout((MockedShuffleServer)shuffleServers.get(0));
@@ -386,7 +390,7 @@ public class QuorumTest extends ShuffleReadWriteBase {
     disableTimeout((MockedShuffleServer)shuffleServers.get(2));
 
     // When 1 server is timeout and 1 server is failed after sending, the block sending should fail
-    enableTimeout((MockedShuffleServer)shuffleServers.get(2), 500);
+    enableTimeout((MockedShuffleServer)shuffleServers.get(2), 2000);
 
     Map<Long, byte[]> expectedData = Maps.newHashMap();
     Roaring64NavigableMap blockIdBitmap = Roaring64NavigableMap.bitmapOf();
@@ -427,6 +431,8 @@ public class QuorumTest extends ShuffleReadWriteBase {
     } catch (Exception e) {
       assertTrue(e.getMessage().startsWith("Get shuffle result is failed"));
     }
+    shuffleServers.set(1, createServer(1, tmpDir));
+    shuffleServers.get(1).start();
 
     // When the timeout of one server is recovered, the block sending should success
     disableTimeout((MockedShuffleServer)shuffleServers.get(2));
@@ -434,11 +440,16 @@ public class QuorumTest extends ShuffleReadWriteBase {
       Sets.newHashSet(shuffleServerInfo0, shuffleServerInfo1, shuffleServerInfo2),
       testAppId, 0, 0);
     assertEquals(report, blockIdBitmap);
+
   }
 
   @Test
   public void case4() throws Exception {
     String testAppId = "case4";
+    /** We must wait until server1 finish start, because {@link #case3} will restart server1. */
+    await().timeout(10, TimeUnit.SECONDS).until(
+        () -> isPortAvailable(SHUFFLE_SERVER_PORT + 1));
+    Thread.sleep(1000);
     registerShuffleServer(testAppId, 3, 2, 2, true);
     // when 1 server is timeout, the sending multiple blocks should success
     enableTimeout((MockedShuffleServer)shuffleServers.get(2), 500);
@@ -811,5 +822,14 @@ public class QuorumTest extends ShuffleReadWriteBase {
       csb = readClient.readShuffleBlockData();
     }
     assertTrue(blockIdBitmap.equals(matched));
+  }
+
+  private boolean isPortAvailable(int port) {
+    try (Socket socket = new Socket()) {
+      socket.connect(new InetSocketAddress("127.0.0.1", port), 500);
+      return true;
+    } catch (Exception e) {
+      return false;
+    }
   }
 }
