@@ -445,6 +445,7 @@ public class QuorumTest extends ShuffleReadWriteBase {
 
   @Test
   public void case4() throws Exception {
+    ShuffleServerClientFactory.getInstance().cleanupCache();
     String testAppId = "case4";
     /** We must wait until server1 finish start, because {@link #case3} will restart server1. */
     await().timeout(10, TimeUnit.SECONDS).until(
