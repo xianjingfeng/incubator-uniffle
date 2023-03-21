@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Lists;
+import org.apache.uniffle.client.factory.ShuffleServerClientFactory;
+import org.apache.uniffle.client.impl.grpc.ShuffleServerGrpcClient;
 import org.junit.jupiter.api.AfterAll;
 
 import org.apache.uniffle.common.util.RssUtils;
@@ -37,6 +39,7 @@ import org.apache.uniffle.server.ShuffleServerConf;
 import org.apache.uniffle.server.ShuffleServerMetrics;
 import org.apache.uniffle.storage.HdfsTestBase;
 import org.apache.uniffle.storage.util.StorageType;
+import org.junit.jupiter.api.BeforeEach;
 
 public abstract class IntegrationTestBase extends HdfsTestBase {
 
@@ -67,6 +70,11 @@ public abstract class IntegrationTestBase extends HdfsTestBase {
     for (ShuffleServer shuffleServer : shuffleServers) {
       shuffleServer.start();
     }
+  }
+
+  @BeforeEach
+  public void createClient() {
+    ShuffleServerClientFactory.getInstance().cleanupCache();
   }
 
   @AfterAll
