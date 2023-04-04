@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.apache.uniffle.common.ClientType;
 import org.apache.uniffle.common.util.RssUtils;
+import org.apache.uniffle.common.rpc.ServerType;
 
 public class RssBaseConf extends RssConf {
 
@@ -31,10 +32,10 @@ public class RssBaseConf extends RssConf {
       .noDefaultValue()
       .withDescription("Coordinator quorum");
 
-  public static final ConfigOption<String> RPC_SERVER_TYPE = ConfigOptions
+  public static final ConfigOption<ServerType> RPC_SERVER_TYPE = ConfigOptions
       .key("rss.rpc.server.type")
-      .stringType()
-      .defaultValue("GRPC")
+      .enumType(ServerType.class)
+      .defaultValue(ServerType.GRPC)
       .withDescription("Shuffle server type, default is grpc");
 
   public static final ConfigOption<Integer> RPC_SERVER_PORT = ConfigOptions
