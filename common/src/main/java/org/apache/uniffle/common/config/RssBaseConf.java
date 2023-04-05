@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.apache.uniffle.common.ClientType;
 import org.apache.uniffle.common.rpc.ServerType;
+import org.apache.uniffle.common.util.RssUtils;
 
 public class RssBaseConf extends RssConf {
 
@@ -230,22 +231,23 @@ public class RssBaseConf extends RssConf {
       .intType()
       .defaultValue(16)
       .withDescription("start server service max retry");
+      
+  public boolean loadConfFromFile(String fileName, List<ConfigOption<Object>> configOptions) {
+    Map<String, String> properties = RssUtils.getPropertiesFromFile(fileName);
+    return loadCommonConf(properties, configOptions);
+  }
 
-  public boolean loadCommonConf(Map<String, String> properties) {
+  public boolean loadCommonConf(Map<String, String> properties, List<ConfigOption<Object>> configOptions) {
     if (properties == null) {
       return false;
     }
+    loadCommonConf(properties);
+    return loadConf(properties, configOptions);
+  }
 
+  public boolean loadCommonConf(Map<String, String> properties) {
     List<ConfigOption<Object>> configOptions = ConfigUtils.getAllConfigOptions(RssBaseConf.class);
-    properties.forEach((k, v) -> {
-      configOptions.forEach(config -> {
-        if (config.key().equalsIgnoreCase(k)) {
-          set(config, ConfigUtils.convertValue(v, config.getClazz()));
-        }
-      });
-    });
-
-    return true;
+    return loadConf(properties, configOptions);
   }
 
 }
