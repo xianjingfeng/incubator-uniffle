@@ -487,6 +487,11 @@
         <version>${fasterxml.jackson.version}</version>
       </dependency>
       <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>${fasterxml.jackson.version}</version>
+      </dependency>
+      <dependency>
         <groupId>com.google.errorprone</groupId>
         <artifactId>error_prone_annotations</artifactId>
         <version>${error_prone_annotations.version}
@@ -591,6 +596,10 @@
           <exclusion>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-son</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
