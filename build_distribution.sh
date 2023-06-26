@@ -138,6 +138,14 @@ export MAVEN_OPTS="${MAVEN_OPTS:--Xmx2g -XX:ReservedCodeCacheSize=1g}"
 # Store the command as an array because $MVN variable might have spaces in it.
 # Normal quoting tricks don't work.
 # See: http://mywiki.wooledge.org/BashFAQ/050
+
+BUILD_THIRD_PARTY_COMMAND=("$MVN" install -f third-party/pom.xml -DskipTests)
+# Build the third-party libraries
+echo -e "\nBuilding with..."
+echo -e "\$ ${BUILD_THIRD_PARTY_COMMAND[@]}\n"
+
+"${BUILD_THIRD_PARTY_COMMAND[@]}"
+
 BUILD_COMMAND=("$MVN" clean package -DskipTests $@)
 
 # Actually build the jar

@@ -31,6 +31,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.apache.uniffle.thirdparty</groupId>
+      <artifactId>shaded-jersey</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
       <artifactId>rss-proto</artifactId>
       <groupId>org.apache.uniffle</groupId>
     </dependency>
