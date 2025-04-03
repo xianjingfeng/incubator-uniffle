@@ -481,7 +481,7 @@ public class ShuffleServerConf extends RssBaseConf {
                   + " But SKIP_LIST doesn't support the slow-start feature of MR.");
 
   public static final ConfigOption<Integer> SERVER_SHUFFLE_FLUSH_TRYLOCK_TIMEOUT =
-      ConfigOptions.key("rss.server.shuffleBuffer.flush.tryLock.timeout.ms")
+      ConfigOptions.key("rss.server.flush.tryLockTimeoutMs")
           .intType()
           .defaultValue(100)
           .withDescription("Before the shuffle buffers of the application flush, "
